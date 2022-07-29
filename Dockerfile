@@ -1,24 +1,15 @@
-FROM mambaorg/micromamba:0.15.3
+FROM python:3.9
 
 EXPOSE 8501
 
-USER root
+WORKDIR /code
 
-RUN mkdir /opt/streamlit-deploy-tutorial
-RUN chmod -R 777 /opt/streamlit-deploy-tutorial
-WORKDIR /opt/streamlit-deploy-tutorial
+COPY ./requirements.txt /code/requirements.txt
+ 
+RUN pip3 install --no-cache-dir --upgrade -r /code/requirements.txt
 
+COPY ./app /code/app
 
-USER micromamba
+ENV PYTHONPATH "${PYTHONPATH}:/code/app"
 
-COPY environment.yml environment.yml
-RUN micromamba install -y -n base -f environment.yml && \
-   micromamba clean --all --yes
-
-COPY run.sh run.sh
-COPY . streamlit-deploy-tutorial/
-
-
-USER root
-RUN chmod a+x run.sh
-CMD ["./run.sh"]
+CMD ["streamlit", "run", "app/app.py", "--theme.base", "dark"]
